@@ -110,6 +110,7 @@ export default function BookkeepingApp() {
 
   const [activeTab, setActiveTab] = useState<
     | 'entry'
+    | 'tinRegistry'
     | 'receipts'
     | 'disbursements'
     | 'journal'
@@ -119,7 +120,6 @@ export default function BookkeepingApp() {
     | 'inhouse'
     | 'reports'
     | 'settings'
-    | 'tinRegistry'
   >('entry');
 
   // ============================================================
@@ -1150,7 +1150,7 @@ export default function BookkeepingApp() {
             </div>
 
             <span
-              className={`px-.01 py-.01 rounded-full border text-[10px] font-black uppercase tracking-wider ${themeClasses.badge}`}
+              className={`px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-wider ${themeClasses.badge}`}
             >
               {scopeEntries.length}{' '}
               Records
@@ -1249,7 +1249,7 @@ export default function BookkeepingApp() {
                   )
                 )
               }
-              className="bg-slate-900 hover:bg-slate-800 text-white text-xs px-3 py-2 rounded-lg font-bold transition"
+              className="bg-slate-900 hover:bg-slate-800 text-white text-xs px-4 py-2 rounded-lg font-bold transition"
             >
               📥 Export CSV
             </button>
@@ -1891,7 +1891,7 @@ export default function BookkeepingApp() {
       {activeTab === 'entry' && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 max-w-4xl mx-auto overflow-hidden">
 
-          <div className="px-7 py-2 bg-slate-900 text-white flex justify-between items-center">
+          <div className="px-6 py-1 bg-slate-900 text-white flex justify-between items-center">
 
             <div>
               <h2 className="text-base font-bold tracking-tight">
@@ -1913,7 +1913,7 @@ export default function BookkeepingApp() {
             onSubmit={
               handleAddTransaction
             }
-            className="p-6 space-y-6"
+            className="p-6 space-y-2"
           >
 
             {/* DATE + SCOPE */}
@@ -2005,7 +2005,7 @@ export default function BookkeepingApp() {
                   Transaction Type
                 </span>
 
-                <div className="grid grid-cols-3 gap-1.5 bg-slate-200/70 p-1 rounded-xl grow">
+                <div className="grid grid-cols-3 gap-0.5 bg-slate-200/70 p-.01 rounded-xl grow">
 
                   {[
                     {
@@ -2040,7 +2040,7 @@ export default function BookkeepingApp() {
                               scope.id as TransactionScope
                             )
                           }
-                          className={`py-1 px-2 rounded-lg text-center transition-all ${
+                          className={`py-1.5 px-1 rounded-lg text-center transition-all ${
                             isSelected
                               ? 'bg-indigo-600 text-white shadow-sm font-bold'
                               : 'bg-transparent text-slate-600 hover:text-slate-900 font-semibold'
@@ -2179,7 +2179,7 @@ export default function BookkeepingApp() {
 
             {/* TIN / OWNER DETAILS */}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
@@ -2196,7 +2196,7 @@ export default function BookkeepingApp() {
 
                   {txTin.trim() && !tinRegistryMatch && tinSuggestions.length > 0 && (
                     <div className="absolute z-40 left-0 right-0 mt-1 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
-                      <div className="px-3 py-200 border-b border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      <div className="px-3 py-2 border-b border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-500">
                         TIN SUGGESTIONS
                       </div>
 
@@ -2248,70 +2248,6 @@ export default function BookkeepingApp() {
                     Select a TIN suggestion above to automatically fill the owner and address.
                   </div>
                 ) : null}
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                  VAT OWNER
-                </label>
-                <input
-                  type="text"
-                  placeholder="ENTER VAT OWNER"
-                  value={txVatOwner}
-                  onChange={(e) => {
-                    setTxVatOwner(e.target.value);
-                    if (e.target.value.trim()) {
-                      setTxNonVatOwner('');
-                    }
-                  }}
-                  tabIndex={
-                    txVatOwner.trim()
-                      ? 0
-                      : -1
-                  }
-                  className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white focus:ring-2 focus:ring-indigo-500 outline-hidden shadow-2xs"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                  NON VAT OWNER
-                </label>
-                <input
-                  type="text"
-                  placeholder="ENTER NON VAT OWNER"
-                  value={txNonVatOwner}
-                  onChange={(e) => {
-                    setTxNonVatOwner(e.target.value);
-                    if (e.target.value.trim()) {
-                      setTxVatOwner('');
-                    }
-                  }}
-                  tabIndex={
-                    txNonVatOwner.trim()
-                      ? 0
-                      : -1
-                  }
-                  className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white focus:ring-2 focus:ring-indigo-500 outline-hidden shadow-2xs"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                  ADDRESS
-                </label>
-                <input
-                  type="text"
-                  placeholder="ENTER ADDRESS"
-                  value={txAddress}
-                  onChange={(e) => setTxAddress(e.target.value)}
-                  tabIndex={
-                    txVatOwner.trim() || txNonVatOwner.trim()
-                      ? 0
-                      : -1
-                  }
-                  className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white focus:ring-2 focus:ring-indigo-500 outline-hidden shadow-2xs"
-                />
               </div>
 
             </div>
