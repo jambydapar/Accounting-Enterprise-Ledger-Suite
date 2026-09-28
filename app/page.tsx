@@ -122,61 +122,6 @@ export default function BookkeepingApp() {
     | 'tinRegistry'
   >('entry');
 
-useEffect(() => {
-  const style = document.createElement("style");
-
-  style.innerHTML = `
-    .global-click-highlight {
-      background-color: #dbeafe !important;
-      box-shadow: none !important;
-      border-color: inherit !important;
-      outline: none !important;
-      transition: background-color 0.15s ease !important;
-    }
-
-    input.global-click-highlight,
-    select.global-click-highlight,
-    textarea.global-click-highlight,
-    button.global-click-highlight,
-    [role="button"].global-click-highlight {
-      background-color: #dbeafe !important;
-      box-shadow: none !important;
-      border-color: inherit !important;
-      outline: none !important;
-    }
-
-    tr.global-click-highlight > td,
-    tr.global-click-highlight > th {
-      background-color: #dbeafe !important;
-      box-shadow: none !important;
-    }
-  `;
-
-  document.head.appendChild(style);
-
-  const handleClick = (e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-
-    document.querySelectorAll(".global-click-highlight")
-      .forEach((el) => el.classList.remove("global-click-highlight"));
-
-    const clicked = target.closest(
-      "button, input, select, textarea, tr, td, th, [role='button'], [role='tab'], a, label"
-    ) as HTMLElement | null;
-
-    if (!clicked) return;
-
-    const row = clicked.closest("tr") as HTMLElement | null;
-    (row || clicked).classList.add("global-click-highlight");
-  };
-
-  document.addEventListener("click", handleClick);
-
-  return () => {
-    document.removeEventListener("click", handleClick);
-    style.remove();
-  };
-}, []);
   
   // ============================================================
   // DATE FILTER
@@ -1880,7 +1825,7 @@ useEffect(() => {
             id: 'entry',
             label: '➕ Record Entry',
           },
-         {
+          {
             id: 'tinRegistry',
             label: '🧾 TIN Registry',
           },
@@ -1920,7 +1865,7 @@ useEffect(() => {
             id: 'settings',
             label: '⚙️ Chart of Accounts',
           },
-        
+          
         ].map((tab) => (
           <button
             key={tab.id}
