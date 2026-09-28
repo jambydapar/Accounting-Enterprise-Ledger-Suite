@@ -1824,6 +1824,10 @@ export default function BookkeepingApp() {
             id: 'entry',
             label: '➕ Record Entry',
           },
+                    {
+            id: 'tinRegistry',
+            label: '🧾 TIN Registry',
+          },
           {
             id: 'receipts',
             label: 'Cash Receipts',
@@ -1860,10 +1864,7 @@ export default function BookkeepingApp() {
             id: 'settings',
             label: '⚙️ Chart of Accounts',
           },
-          {
-            id: 'tinRegistry',
-            label: '🧾 TIN Registry',
-          },
+
         ].map((tab) => (
           <button
             key={tab.id}
