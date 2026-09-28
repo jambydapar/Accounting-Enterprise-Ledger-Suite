@@ -127,55 +127,29 @@ useEffect(() => {
   const style = document.createElement("style");
 
   style.innerHTML = `
-    /* ================================
-       STRONG GLOBAL CLICK HIGHLIGHT
-       ================================ */
-
     .global-click-highlight {
-      background-color: #9ebfea !important;
-      border-color: #9bbbff !important;
-      box-shadow:
-        inset 5px 0 0 #a5bef4,
-        0 0 0 2px rgba(37, 99, 235, 0.20) !important;
-      transition: all 0.15s ease !important;
+      background-color: #dbeafe !important;
+      box-shadow: none !important;
+      border-color: inherit !important;
+      outline: none !important;
+      transition: background-color 0.15s ease !important;
     }
 
-    /* Inputs / Selects / Textareas */
     input.global-click-highlight,
     select.global-click-highlight,
-    textarea.global-click-highlight {
-      background-color: #dbeafe !important;
-      border: 2px solid #2563eb !important;
-      box-shadow:
-        0 0 0 3px rgba(37, 99, 235, 0.18) !important;
-    }
-
-    /* Buttons */
+    textarea.global-click-highlight,
     button.global-click-highlight,
     [role="button"].global-click-highlight {
-      background-color: #bfdbfe !important;
-      border: 2px solid #2563eb !important;
-      color: #1e3a8a !important;
-      box-shadow:
-        0 0 0 3px rgba(37, 99, 235, 0.20) !important;
-    }
-
-    /* Table rows */
-    tr.global-click-highlight {
       background-color: #dbeafe !important;
-      box-shadow:
-        inset 6px 0 0 #2563eb !important;
+      box-shadow: none !important;
+      border-color: inherit !important;
+      outline: none !important;
     }
 
     tr.global-click-highlight > td,
     tr.global-click-highlight > th {
       background-color: #dbeafe !important;
-    }
-
-    /* General clickable items */
-    .global-click-highlight {
-      outline: 2px solid #2563eb !important;
-      outline-offset: -2px !important;
+      box-shadow: none !important;
     }
   `;
 
@@ -184,30 +158,17 @@ useEffect(() => {
   const handleClick = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
 
-    /* Remove old highlight */
-    document
-      .querySelectorAll(".global-click-highlight")
-      .forEach((el) => {
-        el.classList.remove("global-click-highlight");
-      });
+    document.querySelectorAll(".global-click-highlight")
+      .forEach((el) => el.classList.remove("global-click-highlight"));
 
-    /* Find clicked item */
     const clicked = target.closest(
       "button, input, select, textarea, tr, td, th, [role='button'], [role='tab'], a, label"
     ) as HTMLElement | null;
 
     if (!clicked) return;
 
-    /* If inside a table, highlight entire row */
     const row = clicked.closest("tr") as HTMLElement | null;
-
-    if (row) {
-      row.classList.add("global-click-highlight");
-      return;
-    }
-
-    /* Highlight clicked item */
-    clicked.classList.add("global-click-highlight");
+    (row || clicked).classList.add("global-click-highlight");
   };
 
   document.addEventListener("click", handleClick);
