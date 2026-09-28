@@ -1880,6 +1880,10 @@ useEffect(() => {
             id: 'entry',
             label: '➕ Record Entry',
           },
+         {
+            id: 'tinRegistry',
+            label: '🧾 TIN Registry',
+          },
           {
             id: 'receipts',
             label: 'Cash Receipts',
@@ -1916,10 +1920,7 @@ useEffect(() => {
             id: 'settings',
             label: '⚙️ Chart of Accounts',
           },
-          {
-            id: 'tinRegistry',
-            label: '🧾 TIN Registry',
-          },
+        
         ].map((tab) => (
           <button
             key={tab.id}
