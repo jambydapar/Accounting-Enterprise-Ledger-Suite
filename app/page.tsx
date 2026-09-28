@@ -122,6 +122,91 @@ export default function BookkeepingApp() {
     | 'settings'
   >('entry');
 
+  
+useEffect(() => {
+  const style = document.createElement("style");
+
+  style.innerHTML = `
+    /* =================================
+       GLOBAL CLICK HIGHLIGHT
+       NO BORDER COLOR
+       ================================= */
+
+    .global-click-highlight {
+      background-color: #dbeafe !important;
+      box-shadow: inset 5px 0 0 #2563eb !important;
+      transition: background-color 0.15s ease !important;
+    }
+
+    /* Inputs */
+    input.global-click-highlight,
+    select.global-click-highlight,
+    textarea.global-click-highlight {
+      background-color: #dbeafe !important;
+      border-color: inherit !important;
+      box-shadow:
+        inset 5px 0 0 #2563eb !important;
+      outline: none !important;
+    }
+
+    /* Buttons */
+    button.global-click-highlight,
+    [role="button"].global-click-highlight {
+      background-color: #dbeafe !important;
+      border-color: inherit !important;
+      color: inherit !important;
+      box-shadow:
+        inset 5px 0 0 #2563eb !important;
+    }
+
+    /* Table rows */
+    tr.global-click-highlight {
+      background-color: #dbeafe !important;
+      box-shadow: inset 6px 0 0 #2563eb !important;
+    }
+
+    tr.global-click-highlight > td,
+    tr.global-click-highlight > th {
+      background-color: #dbeafe !important;
+    }
+  `;
+
+  document.head.appendChild(style);
+
+  const handleClick = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+
+    document
+      .querySelectorAll(".global-click-highlight")
+      .forEach((el) => {
+        el.classList.remove("global-click-highlight");
+      });
+
+    const clicked = target.closest(
+      "button, input, select, textarea, tr, td, th, [role='button'], [role='tab'], a, label"
+    ) as HTMLElement | null;
+
+    if (!clicked) return;
+
+    const row = clicked.closest("tr") as HTMLElement | null;
+
+    if (row) {
+      row.classList.add("global-click-highlight");
+    } else {
+      clicked.classList.add("global-click-highlight");
+    }
+  };
+
+  document.addEventListener("click", handleClick);
+
+  return () => {
+    document.removeEventListener("click", handleClick);
+    style.remove();
+  };
+}, []);
+
+
+  
   // ============================================================
   // DATE FILTER
   // ============================================================
