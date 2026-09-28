@@ -132,10 +132,10 @@ useEffect(() => {
        ================================ */
 
     .global-click-highlight {
-      background-color: #dbeafe !important;
-      border-color: #2563eb !important;
+      background-color: #9ebfea !important;
+      border-color: #9bbbff !important;
       box-shadow:
-        inset 5px 0 0 #2563eb,
+        inset 5px 0 0 #a5bef4,
         0 0 0 2px rgba(37, 99, 235, 0.20) !important;
       transition: all 0.15s ease !important;
     }
