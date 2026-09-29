@@ -22,10 +22,11 @@ interface Account {
 
 interface TinRegistry {
   id: string;
-  tin: string;
+tin: string;
   vatOwner: string;
   nonVatOwner: string;
   address: string;
+  atc: string;
 }
 
 interface DoubleEntry {
@@ -87,6 +88,7 @@ const MONTHS = [
   { value: '12', label: '12 - Dec' },
 ];
 
+
 const formatAmount = (amount: number) =>
   `₱${amount.toLocaleString('en-US', {
     minimumFractionDigits: 2,
@@ -120,9 +122,697 @@ export default function BookkeepingApp() {
     | 'reports'
     | 'settings'
     | 'tinRegistry'
+     | 'birCompliance'
   >('entry');
 
+
+  const BIR_ATC_OPTIONS = [
+  {
+    code: 'WI010',
+    description: 'Income payments to individuals subject to creditable withholding tax',
+    rate: '10%',
+  },
+  {
+    code: 'WC010',
+    description: 'Income payments to corporations subject to creditable withholding tax',
+    rate: '10%',
+  },
+  {
+    code: 'WI030',
+    description: 'Payments to partners of general professional partnerships',
+    rate: '10%',
+  },
+  {
+    code: 'WI050',
+    description: 'Management and technical consultants',
+    rate: '10%',
+  },
+  {
+    code: 'WI060',
+    description: 'Bookkeeping agents and agencies',
+    rate: '10%',
+  },
+  {
+    code: 'WI156',
+    description: 'Income payments made by credit card companies',
+    rate: '0.5%',
+  },
+  {
+    code: 'WC156',
+    description: 'Income payments made by credit card companies',
+    rate: '0.5%',
+  },
+  {
+    code: 'WI157',
+    description: 'Payments made by government offices to local/resident suppliers of goods and services',
+    rate: '2%',
+  },
+  {
+    code: 'WC157',
+    description: 'Payments made by government offices to local/resident suppliers of goods and services',
+    rate: '2%',
+  },
+  {
+    code: 'WI158',
+    description: 'Income payments by top 10,000 private corporations to local/resident suppliers of goods',
+    rate: '1%',
+  },
+  {
+    code: 'WC158',
+    description: 'Income payments by top 10,000 private corporations to local/resident suppliers of goods',
+    rate: '1%',
+  },
+  {
+    code: 'WI160',
+    description: 'Income payments by top 10,000 private corporations to local/resident suppliers of services',
+    rate: '2%',
+  },
+  {
+    code: 'WC160',
+    description: 'Income payments by top 10,000 private corporations to local/resident suppliers of services',
+    rate: '2%',
+  },
+  {
+    code: 'WI559',
+    description: 'Sale of residential house and lot and other residential dwellings',
+    rate: '5%',
+  },
+  {
+    code: 'WC559',
+    description: 'Sale of residential house and lot and other residential dwellings',
+    rate: '5%',
+  },
+  {
+    code: 'WI560',
+    description: 'Sale of real property classified as ordinary assets other than residential house and lot',
+    rate: '6%',
+  },
+  {
+    code: 'WC560',
+    description: 'Sale of real property classified as ordinary assets other than residential house and lot',
+    rate: '6%',
+  },
+  {
+    code: 'WI820',
+    description: 'One-half of gross remittances by e-marketplace operators to sellers/merchants',
+    rate: '0.5%',
+  },
+  {
+    code: 'WC820',
+    description: 'One-half of gross remittances by e-marketplace operators to sellers/merchants',
+    rate: '0.5%',
+  },
+  {
+    code: 'WI840',
+    description: 'Income payments by top withholding agents to manufacturers/direct importers of motor vehicles and parts',
+    rate: '0.5%',
+  },
+  {
+    code: 'WC840',
+    description: 'Income payments by top withholding agents to manufacturers/direct importers of motor vehicles and parts',
+    rate: '0.5%',
+  },
+  {
+    code: 'WI850',
+    description: 'Income payments by top withholding agents to manufacturers/direct importers of medicine/pharmaceutical products',
+    rate: '',
+  },
+  {
+    code: 'WC850',
+    description: 'Income payments by top withholding agents to manufacturers/direct importers of medicine/pharmaceutical products',
+    rate: '',
+  },
+  {
+    code: 'WI860',
+    description: 'Income payments by top withholding agents to manufacturers/direct importers of solid or liquid fuels and related products',
+    rate: '0.5%',
+  },
+  {
+    code: 'WC860',
+    description: 'Income payments by top withholding agents to manufacturers/direct importers of solid or liquid fuels and related products',
+    rate: '0.5%',
+  },
+];
   
+
+const BIR_FORMS = [
+  // INCOME TAX — INDIVIDUALS
+  {
+    code: '1700',
+    name: 'Annual Income Tax Return — Individuals Earning Purely Compensation Income',
+    category: 'INCOME TAX',
+    taxpayerType: 'INDIVIDUAL',
+  },
+  {
+    code: '1701',
+    name: 'Annual Income Tax Return — Individuals, Estates and Trusts',
+    category: 'INCOME TAX',
+    taxpayerType: 'INDIVIDUAL',
+  },
+  {
+    code: '1701A',
+    name: 'Annual Income Tax Return — Individuals Earning Income Purely from Business/Profession',
+    category: 'INCOME TAX',
+    taxpayerType: 'INDIVIDUAL',
+  },
+  {
+    code: '1701Q',
+    name: 'Quarterly Income Tax Return — Individuals, Estates and Trusts',
+    category: 'INCOME TAX',
+    taxpayerType: 'INDIVIDUAL',
+  },
+  {
+    code: '1701-MS',
+    name: 'Annual Income Tax Return — Micro and Small Taxpayers',
+    category: 'INCOME TAX',
+    taxpayerType: 'INDIVIDUAL',
+  },
+
+  // INCOME TAX — CORPORATIONS
+  {
+    code: '1702-RT',
+    name: 'Annual Income Tax Return — Regular Rate',
+    category: 'INCOME TAX',
+    taxpayerType: 'CORPORATION',
+  },
+  {
+    code: '1702-EX',
+    name: 'Annual Income Tax Return — Exempt Corporation/Partnership',
+    category: 'INCOME TAX',
+    taxpayerType: 'CORPORATION',
+  },
+  {
+    code: '1702-MX',
+    name: 'Annual Income Tax Return — Multiple Income Tax Rates',
+    category: 'INCOME TAX',
+    taxpayerType: 'CORPORATION',
+  },
+  {
+    code: '1702Q',
+    name: 'Quarterly Income Tax Return — Corporations, Partnerships and Other Non-Individual Taxpayers',
+    category: 'INCOME TAX',
+    taxpayerType: 'CORPORATION',
+  },
+
+  // VAT / NON-VAT
+  {
+    code: '2550Q',
+    name: 'Quarterly Value-Added Tax Return',
+    category: 'VAT',
+    taxpayerType: 'VAT',
+  },
+  {
+    code: '2551Q',
+    name: 'Quarterly Percentage Tax Return',
+    category: 'PERCENTAGE TAX',
+    taxpayerType: 'NON-VAT',
+  },
+
+  // WITHHOLDING — COMPENSATION
+  {
+    code: '1601-C',
+    name: 'Monthly Remittance Return of Income Taxes Withheld on Compensation',
+    category: 'WITHHOLDING TAX',
+    taxpayerType: 'EMPLOYER',
+  },
+  {
+    code: '1604-C',
+    name: 'Annual Information Return of Income Taxes Withheld on Compensation',
+    category: 'WITHHOLDING TAX',
+    taxpayerType: 'EMPLOYER',
+  },
+  {
+    code: '2316',
+    name: 'Certificate of Compensation Payment/Tax Withheld',
+    category: 'WITHHOLDING TAX',
+    taxpayerType: 'EMPLOYER',
+  },
+
+  // WITHHOLDING — EXPANDED
+  {
+    code: '0619-E',
+    name: 'Monthly Remittance Form of Creditable Income Taxes Withheld — Expanded',
+    category: 'WITHHOLDING TAX',
+    taxpayerType: 'WITHHOLDING AGENT',
+  },
+  {
+    code: '1601-EQ',
+    name: 'Quarterly Remittance Return of Creditable Income Taxes Withheld — Expanded',
+    category: 'WITHHOLDING TAX',
+    taxpayerType: 'WITHHOLDING AGENT',
+  },
+  {
+    code: '1604-E',
+    name: 'Annual Information Return of Creditable Income Taxes Withheld — Expanded',
+    category: 'WITHHOLDING TAX',
+    taxpayerType: 'WITHHOLDING AGENT',
+  },
+  {
+    code: '2307',
+    name: 'Certificate of Creditable Tax Withheld at Source',
+    category: 'WITHHOLDING TAX',
+    taxpayerType: 'PAYEE',
+  },
+];
+
+  // ============================================================
+  // BIR COMPLIANCE MODULE
+  // ============================================================
+
+  type BIRModule =
+    | 'FORM'
+    | 'SLS'
+    | 'SLP'
+    | 'EXPANDED'
+    | 'SAWT';
+
+  interface BIRReportRow {
+    id: string;
+    date: string;
+    tin: string;
+    name: string;
+    address: string;
+    atc: string;
+    natureOfPayment: string;
+    taxRate: number;
+    incomePayment: number;
+    taxWithheld: number;
+    refNo: string;
+  }
+
+  const [activeBIRModule, setActiveBIRModule] =
+    useState<BIRModule>('FORM');
+
+  const [selectedBIRForm, setSelectedBIRForm] =
+    useState('2550Q');
+
+  const [birReportYear, setBirReportYear] =
+    useState(new Date().getFullYear().toString());
+
+  const [birReportMonth, setBirReportMonth] =
+    useState('01');
+
+  const [birValidationMessage, setBirValidationMessage] =
+    useState('');
+
+  const [birValidationErrors, setBirValidationErrors] =
+    useState<string[]>([]);
+
+  const [birReportRows, setBirReportRows] =
+    useState<BIRReportRow[]>([]);
+
+  const getBIRRate = (atc: string): number => {
+    const option = BIR_ATC_OPTIONS.find(
+      (item) => item.code === atc
+    );
+
+    if (!option || !option.rate) {
+      return 0;
+    }
+
+    return (
+      Number(
+        option.rate.replace('%', '').trim()
+      ) || 0
+    );
+  };
+
+  const generateBIRReportRows = (): BIRReportRow[] => {
+    return entries
+      .filter((entry) => !entry.isVoided)
+      .map((entry) => {
+        const tinRecord = tinRegistry.find(
+          (item) => item.tin === entry.tin
+        );
+
+        const atc = tinRecord?.atc || '';
+
+        const rate = getBIRRate(atc);
+
+        const incomePayment =
+          Number(entry.grossAmount ?? entry.amount ?? 0);
+
+        const taxWithheld =
+          incomePayment * (rate / 100);
+
+        return {
+          id: entry.id,
+          date: entry.date,
+          tin: entry.tin || '',
+          name:
+            entry.vatOwner ||
+            entry.nonVatOwner ||
+            '',
+          address: entry.address || '',
+          atc,
+          natureOfPayment:
+            entry.particulars || '',
+          taxRate: rate,
+          incomePayment,
+          taxWithheld,
+          refNo: entry.refNo || '',
+        };
+      });
+  };
+
+  const validateBIRReport = (
+    moduleType: BIRModule
+  ) => {
+    const rows = generateBIRReportRows();
+
+    const errors: string[] = [];
+
+    rows.forEach((row, index) => {
+      const line = index + 1;
+
+      if (!row.tin) {
+        errors.push(
+          `Line ${line}: Missing TIN.`
+        );
+      }
+
+      if (!row.name) {
+        errors.push(
+          `Line ${line}: Missing taxpayer/payee name.`
+        );
+      }
+
+      if (
+        moduleType === 'EXPANDED' ||
+        moduleType === 'SAWT'
+      ) {
+        if (!row.atc) {
+          errors.push(
+            `Line ${line}: Missing ATC.`
+          );
+        }
+
+        if (row.incomePayment <= 0) {
+          errors.push(
+            `Line ${line}: Income payment must be greater than zero.`
+          );
+        }
+      }
+    });
+
+    setBirReportRows(rows);
+    setBirValidationErrors(errors);
+
+    setBirValidationMessage(
+      errors.length === 0
+        ? `Validation successful. ${rows.length} record(s) checked.`
+        : `Validation completed with ${errors.length} error(s).`
+    );
+  };
+
+  const escapeCSV = (value: unknown) => {
+    const text = String(value ?? '');
+
+    if (
+      text.includes(',') ||
+      text.includes('"') ||
+      text.includes('\n')
+    ) {
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    return text;
+  };
+
+  const downloadBIRExcelCompatibleCSV = (
+    moduleType: BIRModule
+  ) => {
+    const rows =
+      birReportRows.length > 0
+        ? birReportRows
+        : generateBIRReportRows();
+
+    const headers = [
+      'DATE',
+      'TIN',
+      'NAME',
+      'ADDRESS',
+      'ATC',
+      'NATURE OF PAYMENT',
+      'TAX RATE',
+      'INCOME PAYMENT',
+      'TAX WITHHELD',
+      'REFERENCE NO.',
+    ];
+
+    const csvRows = [
+      headers,
+      ...rows.map((row) => [
+        row.date,
+        row.tin,
+        row.name,
+        row.address,
+        row.atc,
+        row.natureOfPayment,
+        `${row.taxRate}%`,
+        row.incomePayment.toFixed(2),
+        row.taxWithheld.toFixed(2),
+        row.refNo,
+      ]),
+    ];
+
+    const csv = csvRows
+      .map((row) =>
+        row.map(escapeCSV).join(',')
+      )
+      .join('\r\n');
+
+    const blob = new Blob(
+      [csv],
+      {
+        type: 'text/csv;charset=utf-8;',
+      }
+    );
+
+    const url =
+      URL.createObjectURL(blob);
+
+    const link =
+      document.createElement('a');
+
+    link.href = url;
+
+    link.download =
+      `BIR_${moduleType}_${birReportYear}_${birReportMonth}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadBIRDAT = (
+    moduleType: BIRModule
+  ) => {
+    const rows =
+      birReportRows.length > 0
+        ? birReportRows
+        : generateBIRReportRows();
+
+    const errors: string[] = [];
+
+    rows.forEach((row, index) => {
+      if (!row.tin) {
+        errors.push(
+          `Line ${index + 1}: Missing TIN`
+        );
+      }
+
+      if (!row.name) {
+        errors.push(
+          `Line ${index + 1}: Missing name`
+        );
+      }
+
+      if (
+        (moduleType === 'EXPANDED' ||
+          moduleType === 'SAWT') &&
+        !row.atc
+      ) {
+        errors.push(
+          `Line ${index + 1}: Missing ATC`
+        );
+      }
+    });
+
+    if (errors.length > 0) {
+      setBirValidationErrors(errors);
+
+      setBirValidationMessage(
+        'DAT generation stopped because validation errors were found.'
+      );
+
+      return;
+    }
+
+    const datRows = rows.map((row) =>
+      [
+        moduleType,
+        row.tin,
+        row.name,
+        row.address,
+        row.atc,
+        row.natureOfPayment,
+        row.taxRate.toFixed(2),
+        row.incomePayment.toFixed(2),
+        row.taxWithheld.toFixed(2),
+        row.refNo,
+      ].join('|')
+    );
+
+    const datContent =
+      datRows.join('\r\n');
+
+    const blob = new Blob(
+      [datContent],
+      {
+        type: 'text/plain;charset=utf-8',
+      }
+    );
+
+    const url =
+      URL.createObjectURL(blob);
+
+    const link =
+      document.createElement('a');
+
+    link.href = url;
+
+    link.download =
+      `BIR_${moduleType}_${birReportYear}_${birReportMonth}.DAT`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+    setBirValidationMessage(
+      `${moduleType} DAT file generated from ${rows.length} record(s).`
+    );
+  };
+
+  const printBIRReport = (
+    moduleType: BIRModule
+  ) => {
+    const rows =
+      birReportRows.length > 0
+        ? birReportRows
+        : generateBIRReportRows();
+
+    const printWindow =
+      window.open('', '_blank');
+
+    if (!printWindow) {
+      return;
+    }
+
+    const tableRows = rows
+      .map(
+        (row) => `
+          <tr>
+            <td>${row.date}</td>
+            <td>${row.tin}</td>
+            <td>${row.name}</td>
+            <td>${row.atc}</td>
+            <td>${row.taxRate.toFixed(2)}%</td>
+            <td style="text-align:right">
+              ${row.incomePayment.toFixed(2)}
+            </td>
+            <td style="text-align:right">
+              ${row.taxWithheld.toFixed(2)}
+            </td>
+          </tr>
+        `
+      )
+      .join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>BIR ${moduleType} Report</title>
+
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 30px;
+              color: #111827;
+            }
+
+            h1 {
+              font-size: 20px;
+              margin-bottom: 4px;
+            }
+
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+              font-size: 10px;
+            }
+
+            th,
+            td {
+              border: 1px solid #cbd5e1;
+              padding: 6px;
+              text-align: left;
+            }
+
+            th {
+              background: #e2e8f0;
+            }
+          </style>
+        </head>
+
+        <body>
+          <h1>BIR ${moduleType} REPORT</h1>
+
+          <p>
+            Year: ${birReportYear}
+          </p>
+
+          <p>
+            Period: ${birReportMonth}
+          </p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>DATE</th>
+                <th>TIN</th>
+                <th>NAME</th>
+                <th>ATC</th>
+                <th>RATE</th>
+                <th>INCOME PAYMENT</th>
+                <th>TAX WITHHELD</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+
+    setTimeout(() => {
+      printWindow.print();
+    }, 300);
+  };
+
+
+
   // ============================================================
   // DATE FILTER
   // ============================================================
@@ -287,6 +977,7 @@ export default function BookkeepingApp() {
   const [tinRegistryVatOwner, setTinRegistryVatOwner] = useState('');
   const [tinRegistryNonVatOwner, setTinRegistryNonVatOwner] = useState('');
   const [tinRegistryAddress, setTinRegistryAddress] = useState('');
+  const [tinRegistryAtc, setTinRegistryAtc] = useState('');
   const [editingTinRegistryId, setEditingTinRegistryId] = useState<string | null>(null);
   const [showTinRegisterForm, setShowTinRegisterForm] = useState(false);
   const [showTinRegisterModal, setShowTinRegisterModal] = useState(false);
@@ -376,6 +1067,7 @@ export default function BookkeepingApp() {
     const vatOwner = tinRegistryVatOwner.trim().toUpperCase();
     const nonVatOwner = tinRegistryNonVatOwner.trim().toUpperCase();
     const address = tinRegistryAddress.trim().toUpperCase();
+    const atc = tinRegistryAtc.trim().toUpperCase();
     const savingFromRecordEntry = showTinRegisterModal;
 
     if (!tin) {
@@ -414,23 +1106,30 @@ export default function BookkeepingApp() {
         )
       );
       alert('TIN Registry record successfully updated!');
-    } else {
-      setTinRegistry((current) => [
-        ...current,
-        { id: Date.now().toString(), tin, vatOwner, nonVatOwner, address },
-      ]);
+   } else {
+  setTinRegistry((current) => [
+    ...current,
+    {
+      id: Date.now().toString(),
+      tin,
+      vatOwner,
+      nonVatOwner,
+      address,
+      atc,
+    },
+  ]);
 
-      // When a new TIN is registered directly from Record Entry,
-      // immediately apply the saved details to the current transaction.
-      if (savingFromRecordEntry) {
-        setTxTin(tin);
-        setTxVatOwner(vatOwner);
-        setTxNonVatOwner(nonVatOwner);
-        setTxAddress(address);
-      }
+  // When a new TIN is registered directly from Record Entry,
+  // immediately apply the saved details to the current transaction.
+  if (savingFromRecordEntry) {
+    setTxTin(tin);
+    setTxVatOwner(vatOwner);
+    setTxNonVatOwner(nonVatOwner);
+    setTxAddress(address);
+  }
 
-      alert('TIN successfully registered!');
-    }
+  alert('TIN successfully registered!');
+}
 
     resetTinRegistryForm();
     setShowTinRegisterForm(false);
@@ -443,6 +1142,7 @@ export default function BookkeepingApp() {
     setTinRegistryVatOwner(item.vatOwner);
     setTinRegistryNonVatOwner(item.nonVatOwner);
     setTinRegistryAddress(item.address);
+    setTinRegistryAtc(item.atc || '');
     setShowTinRegisterForm(true);
   };
 
@@ -874,6 +1574,9 @@ export default function BookkeepingApp() {
       'Transaction successfully posted!'
     );
   };
+
+
+
 
   // ============================================================
   // VOID / UNVOID
@@ -1727,6 +2430,47 @@ export default function BookkeepingApp() {
                 <input type="text" placeholder="VAT OWNER" value={tinRegistryVatOwner} onChange={(e) => { setTinRegistryVatOwner(e.target.value); if (e.target.value.trim()) setTinRegistryNonVatOwner(''); }} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" />
                 <input type="text" placeholder="NON VAT OWNER" value={tinRegistryNonVatOwner} onChange={(e) => { setTinRegistryNonVatOwner(e.target.value); if (e.target.value.trim()) setTinRegistryVatOwner(''); }} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" />
                 <input type="text" placeholder="ADDRESS" value={tinRegistryAddress} onChange={(e) => setTinRegistryAddress(e.target.value)} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" required />
+                <div className="relative">
+  <input
+    type="text"
+    placeholder="SEARCH ATC"
+    value={tinRegistryAtc}
+    onChange={(e) => setTinRegistryAtc(e.target.value.toUpperCase())}
+    className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+  />
+
+  {tinRegistryAtc && (
+    <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-slate-300 rounded-lg shadow-lg">
+      {BIR_ATC_OPTIONS
+        .filter((atc) =>
+          `${atc.code} ${atc.description} ${atc.rate}`
+            .toLowerCase()
+            .includes(tinRegistryAtc.toLowerCase())
+        )
+        .map((atc) => (
+          <button
+            key={atc.code}
+            type="button"
+            onClick={() => setTinRegistryAtc(atc.code)}
+            className="w-full text-left px-3 py-2.5 hover:bg-indigo-50 border-b border-slate-100"
+          >
+            <div className="text-xs font-bold text-slate-900">
+              {atc.code}
+              {atc.rate && (
+                <span className="ml-2 text-indigo-600">
+                  {atc.rate}
+                </span>
+              )}
+            </div>
+
+            <div className="text-[10px] text-slate-500">
+              {atc.description}
+            </div>
+          </button>
+        ))}
+    </div>
+  )}
+</div>
               </div>
               <div className="flex gap-2 mt-4">
                 <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold">SAVE TO TIN REGISTRY</button>
@@ -1829,6 +2573,10 @@ export default function BookkeepingApp() {
             id: 'tinRegistry',
             label: '🧾 TIN Registry',
           },
+          {
+              id: 'birCompliance',
+               label: '📋 BIR Compliance',
+          },     
           {
             id: 'receipts',
             label: 'Cash Receipts',
@@ -4828,55 +5576,705 @@ export default function BookkeepingApp() {
         </div>
       )}
 
-      {/* ========================================================
-          10. TIN REGISTRY
-      ======================================================== */}
+{/* ========================================================
+    TIN REGISTRY
+======================================================== */}
 
-      {activeTab === 'tinRegistry' && (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 w-full max-w-[1500px] mx-auto">
-          <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">TIN Registry</h2>
-              <p className="text-xs text-slate-500 mt-1">Register TIN, VAT OWNER, NON VAT OWNER, and ADDRESS for automatic lookup in Record Entry.</p>
-            </div>
-            <button type="button" onClick={() => { resetTinRegistryForm(); setShowTinRegisterForm((current) => !current); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold">+ REGISTER TIN</button>
+{activeTab === 'tinRegistry' && (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 w-full max-w-[1500px] mx-auto">
+
+    {/* ====================================================
+        TIN REGISTRY HEADER
+    ==================================================== */}
+
+    <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
+
+      <div>
+
+        <h2 className="text-base font-bold text-slate-900">
+          TIN Registry
+        </h2>
+
+        <p className="text-xs text-slate-500 mt-1">
+          Register TIN, VAT OWNER, NON VAT OWNER, and ADDRESS for automatic lookup in Record Entry.
+        </p>
+
+      </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          resetTinRegistryForm();
+          setShowTinRegisterForm((current) => !current);
+        }}
+        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold"
+      >
+        + REGISTER TIN
+      </button>
+
+    </div>
+
+
+    {/* ====================================================
+        COMPACT REGISTER NEW TIN FORM
+    ==================================================== */}
+
+    {showTinRegisterForm && (
+
+      <div className="mb-5 border border-slate-200 bg-slate-50 rounded-xl p-3">
+
+        <div className="flex items-center justify-between mb-2">
+
+          <div>
+
+            <h3 className="text-sm font-bold text-slate-900">
+              Register New TIN
+            </h3>
+
+            <p className="text-[10px] text-slate-500">
+              Enter taxpayer information.
+            </p>
+
           </div>
 
-          {showTinRegisterForm && (
-            <form onSubmit={handleSaveTinRegistry} className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50/60 p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input type="text" placeholder="TIN" value={tinRegistryTin} onChange={(e) => setTinRegistryTin(e.target.value)} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" required />
-                <input type="text" placeholder="VAT OWNER" value={tinRegistryVatOwner} onChange={(e) => { setTinRegistryVatOwner(e.target.value); if (e.target.value.trim()) setTinRegistryNonVatOwner(''); }} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" />
-                <input type="text" placeholder="NON VAT OWNER" value={tinRegistryNonVatOwner} onChange={(e) => { setTinRegistryNonVatOwner(e.target.value); if (e.target.value.trim()) setTinRegistryVatOwner(''); }} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" />
-                <input type="text" placeholder="ADDRESS" value={tinRegistryAddress} onChange={(e) => setTinRegistryAddress(e.target.value)} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" required />
-              </div>
-              <div className="flex gap-2 mt-3">
-                <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold">{editingTinRegistryId ? 'SAVE CHANGES' : 'SAVE TO TIN REGISTRY'}</button>
-                <button type="button" onClick={() => { resetTinRegistryForm(); setShowTinRegisterForm(false); }} className="border border-slate-300 bg-white px-4 py-2 rounded-lg text-xs font-bold text-slate-700">CANCEL</button>
-              </div>
-            </form>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              resetTinRegistryForm();
+              setShowTinRegisterForm(false);
+            }}
+            className="text-slate-400 hover:text-slate-700 text-lg font-bold px-2"
+          >
+            ×
+          </button>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left border-collapse text-xs">
-              <thead><tr className="bg-slate-100 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
-                <th className="p-3 border border-slate-200">TIN</th><th className="p-3 border border-slate-200">VAT OWNER</th><th className="p-3 border border-slate-200">NON VAT OWNER</th><th className="p-3 border border-slate-200">ADDRESS</th><th className="p-3 border border-slate-200 text-center">Action</th>
-              </tr></thead>
-              <tbody>
-                {tinRegistry.length === 0 ? <tr><td colSpan={5} className="p-8 text-center text-slate-400 font-semibold border border-slate-200">No TIN records registered.</td></tr> : tinRegistry.map((item) => (
-                  <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="p-3 border border-slate-200 font-bold font-mono">{item.tin}</td><td className="p-3 border border-slate-200 font-semibold">{item.vatOwner}</td><td className="p-3 border border-slate-200 font-semibold">{item.nonVatOwner}</td><td className="p-3 border border-slate-200">{item.address}</td>
-                    <td className="p-2 border border-slate-200"><div className="flex justify-center gap-2"><button type="button" onClick={() => startEditTinRegistry(item)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-[10px] font-bold">Edit</button><button type="button" onClick={() => handleDeleteTinRegistry(item)} className="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-md text-[10px] font-bold">Delete</button></div></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
+
+
+        <form
+          onSubmit={(e) => {
+
+            e.preventDefault();
+
+            const form = e.currentTarget;
+            const formData = new FormData(form);
+
+            const tin =
+              String(formData.get('tin') || '').trim();
+
+            const vatOwner =
+              String(formData.get('vatOwner') || '').trim();
+
+            const nonVatOwner =
+              String(formData.get('nonVatOwner') || '').trim();
+
+            const address =
+              String(formData.get('address') || '').trim();
+
+            const atc =
+              String(formData.get('atc') || '').trim().toUpperCase();
+
+
+            /* ================================================
+               VALIDATION
+            ================================================ */
+
+            if (!tin) {
+
+              alert('Please enter TIN.');
+
+              return;
+
+            }
+
+
+            if (!vatOwner && !nonVatOwner) {
+
+              alert(
+                'Please enter either VAT OWNER or NON VAT OWNER.'
+              );
+
+              return;
+
+            }
+
+
+            /* ================================================
+               DUPLICATE TIN CHECK
+            ================================================ */
+
+            const normalizedTin =
+              tin.replace(/[^0-9]/g, '');
+
+
+            const duplicateTin =
+              tinRegistry.some(
+                (item) =>
+                  String(item.tin || '')
+                    .replace(/[^0-9]/g, '') ===
+                  normalizedTin
+              );
+
+
+            if (duplicateTin) {
+
+              alert('This TIN is already registered.');
+
+              return;
+
+            }
+
+
+            /* ================================================
+               CREATE NEW TIN RECORD
+            ================================================ */
+
+            const newTinRecord = {
+
+              id:
+                typeof crypto !== 'undefined' &&
+                typeof crypto.randomUUID === 'function'
+                  ? crypto.randomUUID()
+                  : `${Date.now()}-${Math.random()
+                      .toString(36)
+                      .slice(2)}`,
+
+              tin,
+
+              vatOwner,
+
+              nonVatOwner,
+
+              address,
+
+              atc,
+
+            };
+
+
+            setTinRegistry((current) => [
+              ...current,
+              newTinRecord,
+            ]);
+
+
+            /* ================================================
+               RESET FORM
+            ================================================ */
+
+            form.reset();
+
+            resetTinRegistryForm();
+
+            setShowTinRegisterForm(false);
+
+
+            alert('TIN registered successfully.');
+
+          }}
+
+          className="space-y-2"
+        >
+
+          {/* ================================================
+              FIRST ROW
+          ================================================ */}
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+
+            {/* TIN */}
+
+            <div>
+
+              <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1">
+                TIN
+              </label>
+
+              <input
+                name="tin"
+                type="text"
+                maxLength={15}
+                placeholder="000-000-000-000"
+                className="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+              />
+
+            </div>
+
+
+            {/* VAT OWNER */}
+
+            <div>
+
+              <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1">
+                VAT OWNER
+              </label>
+
+              <input
+                name="vatOwner"
+                type="text"
+                placeholder="VAT registered taxpayer"
+                className="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+              />
+
+            </div>
+
+
+            {/* NON VAT OWNER */}
+
+            <div>
+
+              <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1">
+                NON VAT OWNER
+              </label>
+
+              <input
+                name="nonVatOwner"
+                type="text"
+                placeholder="Non-VAT taxpayer"
+                className="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+              />
+
+            </div>
+
+
+            {/* ATC - TYPE OR SELECT */}
+
+            <div>
+
+              <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1">
+                ATC
+              </label>
+
+              <input
+                name="atc"
+                type="text"
+                list="tin-atc-options"
+                placeholder="TYPE OR SELECT ATC"
+                autoComplete="off"
+                className="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white outline-hidden focus:ring-2 focus:ring-indigo-500 uppercase"
+              />
+
+              <datalist id="tin-atc-options">
+
+                {BIR_ATC_OPTIONS.map((atc) => (
+
+                  <option
+                    key={atc.code}
+                    value={atc.code}
+                  >
+                    {atc.description}
+                    {atc.rate ? ` — ${atc.rate}` : ''}
+                  </option>
+
+                ))}
+
+              </datalist>
+
+            </div>
+
+          </div>
+
+
+          {/* ================================================
+              SECOND ROW
+          ================================================ */}
+
+          <div className="flex flex-col md:flex-row gap-2 items-end">
+
+            {/* ADDRESS */}
+
+            <div className="flex-1">
+
+              <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1">
+                ADDRESS
+              </label>
+
+              <input
+                name="address"
+                type="text"
+                placeholder="Complete registered address"
+                className="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+              />
+
+            </div>
+
+
+            {/* BUTTONS */}
+
+            <div className="flex gap-2 shrink-0">
+
+              <button
+                type="button"
+                onClick={() => {
+                  resetTinRegistryForm();
+                  setShowTinRegisterForm(false);
+                }}
+                className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-xs font-bold hover:bg-slate-100"
+              >
+                CANCEL
+              </button>
+
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold"
+              >
+                SAVE TIN
+              </button>
+
+            </div>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    )}
+
+
+    {/* ====================================================
+        SEARCH ATC / TIN REGISTRY SEARCH
+    ==================================================== */}
+
+    <div className="relative mt-3">
+
+      <input
+        type="text"
+        placeholder="SEARCH ATC"
+        value={tinRegistryAtc}
+        onChange={(e) =>
+          setTinRegistryAtc(
+            e.target.value.toUpperCase()
+          )
+        }
+        className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+      />
+
+      {tinRegistryAtc && (
+
+        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-slate-300 rounded-lg shadow-lg">
+
+          {BIR_ATC_OPTIONS
+            .filter((atc) =>
+              `${atc.code} ${atc.description} ${atc.rate}`
+                .toLowerCase()
+                .includes(
+                  tinRegistryAtc.toLowerCase()
+                )
+            )
+            .map((atc) => (
+
+              <button
+                key={atc.code}
+                type="button"
+                onClick={() =>
+                  setTinRegistryAtc(atc.code)
+                }
+                className="w-full text-left px-3 py-2.5 hover:bg-indigo-50 border-b border-slate-100"
+              >
+
+                <div className="text-xs font-bold text-slate-900">
+
+                  {atc.code}
+
+                  {atc.rate && (
+
+                    <span className="ml-2 text-indigo-600">
+                      {atc.rate}
+                    </span>
+
+                  )}
+
+                </div>
+
+                <div className="text-[10px] text-slate-500">
+                  {atc.description}
+                </div>
+
+              </button>
+
+            ))}
+
+        </div>
+
       )}
 
+    </div>
+
+
+    {/* ========================================================
+        TIN REGISTRY TABLE
+    ======================================================== */}
+
+    <div className="overflow-x-auto">
+
+      <table className="w-full min-w-[1000px] text-left border-collapse text-xs">
+
+        <thead>
+
+          <tr className="bg-slate-100 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
+
+            <th className="p-3 border border-slate-200">
+              TIN
+            </th>
+
+            <th className="p-3 border border-slate-200">
+              VAT OWNER
+            </th>
+
+            <th className="p-3 border border-slate-200">
+              NON VAT OWNER
+            </th>
+
+            <th className="p-3 border border-slate-200">
+              ADDRESS
+            </th>
+
+            <th className="p-3 border border-slate-200">
+              ATC
+            </th>
+
+            <th className="p-3 border border-slate-200 text-center">
+              ACTION
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          {/* ====================================================
+              NO RECORDS
+          ==================================================== */}
+
+          {tinRegistry.length === 0 ? (
+
+            <tr>
+
+              <td
+                colSpan={6}
+                className="p-8 text-center text-slate-400 font-semibold border border-slate-200"
+              >
+                No TIN records registered.
+              </td>
+
+            </tr>
+
+          ) : (
+
+            /* ==================================================
+               FILTERED RECORDS
+            ================================================== */
+
+            tinRegistry
+              .filter((item) => {
+
+                const searchValue =
+                  tinRegistryAtc.trim().toLowerCase();
+
+                if (!searchValue) {
+                  return true;
+                }
+
+                return (
+                  String(item.tin || '')
+                    .toLowerCase()
+                    .includes(searchValue) ||
+
+                  String(item.vatOwner || '')
+                    .toLowerCase()
+                    .includes(searchValue) ||
+
+                  String(item.nonVatOwner || '')
+                    .toLowerCase()
+                    .includes(searchValue) ||
+
+                  String(item.address || '')
+                    .toLowerCase()
+                    .includes(searchValue) ||
+
+                  String(item.atc || '')
+                    .toLowerCase()
+                    .includes(searchValue)
+                );
+
+              })
+              .map((item) => (
+
+                <tr
+                  key={item.id}
+                  className="border-b border-slate-100 hover:bg-slate-50"
+                >
+
+                  {/* TIN */}
+
+                  <td className="p-3 border border-slate-200 font-bold font-mono whitespace-nowrap">
+                    {item.tin}
+                  </td>
+
+
+                  {/* VAT OWNER */}
+
+                  <td className="p-3 border border-slate-200 font-semibold">
+                    {item.vatOwner || ''}
+                  </td>
+
+
+                  {/* NON VAT OWNER */}
+
+                  <td className="p-3 border border-slate-200 font-semibold">
+                    {item.nonVatOwner || ''}
+                  </td>
+
+
+                  {/* ADDRESS */}
+
+                  <td className="p-3 border border-slate-200">
+                    {item.address || ''}
+                  </td>
+
+
+                  {/* ATC */}
+
+                  <td className="p-3 border border-slate-200 font-semibold whitespace-nowrap">
+
+                    {item.atc ? (
+
+                      <span className="inline-flex items-center px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] font-bold">
+                        {item.atc}
+                      </span>
+
+                    ) : (
+
+                      <span className="text-slate-300">
+                        —
+                      </span>
+
+                    )}
+
+                  </td>
+
+
+                  {/* ACTION */}
+
+                  <td className="p-2 border border-slate-200">
+
+                    <div className="flex justify-center gap-2">
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          startEditTinRegistry(item)
+                        }
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-[10px] font-bold"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDeleteTinRegistry(item)
+                        }
+                        className="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-md text-[10px] font-bold"
+                      >
+                        Delete
+                      </button>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+              ))
+
+          )}
+
+
+          {/* ====================================================
+              NO SEARCH RESULTS
+          ==================================================== */}
+
+          {tinRegistry.length > 0 &&
+            tinRegistryAtc.trim() !== '' &&
+            tinRegistry.filter((item) => {
+
+              const searchValue =
+                tinRegistryAtc.trim().toLowerCase();
+
+              return (
+                String(item.tin || '')
+                  .toLowerCase()
+                  .includes(searchValue) ||
+
+                String(item.vatOwner || '')
+                  .toLowerCase()
+                  .includes(searchValue) ||
+
+                String(item.nonVatOwner || '')
+                  .toLowerCase()
+                  .includes(searchValue) ||
+
+                String(item.address || '')
+                  .toLowerCase()
+                  .includes(searchValue) ||
+
+                String(item.atc || '')
+                  .toLowerCase()
+                  .includes(searchValue)
+              );
+
+            }).length === 0 && (
+
+              <tr>
+
+                <td
+                  colSpan={6}
+                  className="p-8 text-center border border-slate-200"
+                >
+
+                  <div className="text-slate-500 font-semibold">
+                    No matching TIN registry records found.
+                  </div>
+
+                  <div className="text-[10px] text-slate-400 mt-1">
+                    Try another TIN, taxpayer name, address, or ATC.
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setTinRegistryAtc('')
+                    }
+                    className="mt-3 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md text-[10px] font-bold"
+                  >
+                    CLEAR SEARCH
+                  </button>
+
+                </td>
+
+              </tr>
+
+            )}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+)}
+
+
+
+
+
       {/* ========================================================
-          11. CHART OF ACCOUNTS
+          12. CHART OF ACCOUNTS
       ======================================================== */}
 
       {activeTab === 'settings' && (
