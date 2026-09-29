@@ -978,6 +978,7 @@ const BIR_FORMS = [
   const [tinRegistryNonVatOwner, setTinRegistryNonVatOwner] = useState('');
   const [tinRegistryAddress, setTinRegistryAddress] = useState('');
   const [tinRegistryAtc, setTinRegistryAtc] = useState('');
+  const [tinRegistrySearch, setTinRegistrySearch] = useState('');
   const [editingTinRegistryId, setEditingTinRegistryId] = useState<string | null>(null);
   const [showTinRegisterForm, setShowTinRegisterForm] = useState(false);
   const [showTinRegisterModal, setShowTinRegisterModal] = useState(false);
@@ -2414,72 +2415,174 @@ const BIR_FORMS = [
 
       </header>
 
-      {showTinRegisterModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h2 className="text-base font-black text-slate-900">REGISTER TIN</h2>
-                <p className="text-xs text-slate-500 mt-1">Save this TIN directly to the TIN Registry.</p>
-              </div>
-              <button type="button" onClick={() => { resetTinRegistryForm(); setShowTinRegisterModal(false); }} className="text-slate-500 hover:text-slate-900 font-bold">✕</button>
-            </div>
-            <form onSubmit={handleSaveTinRegistry}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input type="text" placeholder="TIN" value={tinRegistryTin} onChange={(e) => setTinRegistryTin(e.target.value)} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" required />
-                <input type="text" placeholder="VAT OWNER" value={tinRegistryVatOwner} onChange={(e) => { setTinRegistryVatOwner(e.target.value); if (e.target.value.trim()) setTinRegistryNonVatOwner(''); }} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" />
-                <input type="text" placeholder="NON VAT OWNER" value={tinRegistryNonVatOwner} onChange={(e) => { setTinRegistryNonVatOwner(e.target.value); if (e.target.value.trim()) setTinRegistryVatOwner(''); }} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" />
-                <input type="text" placeholder="ADDRESS" value={tinRegistryAddress} onChange={(e) => setTinRegistryAddress(e.target.value)} className="border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500" required />
-                <div className="relative">
-  <input
-    type="text"
-    placeholder="SEARCH ATC"
-    value={tinRegistryAtc}
-    onChange={(e) => setTinRegistryAtc(e.target.value.toUpperCase())}
-    className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
-  />
 
-  {tinRegistryAtc && (
-    <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-slate-300 rounded-lg shadow-lg">
-      {BIR_ATC_OPTIONS
-        .filter((atc) =>
-          `${atc.code} ${atc.description} ${atc.rate}`
-            .toLowerCase()
-            .includes(tinRegistryAtc.toLowerCase())
-        )
-        .map((atc) => (
-          <button
-            key={atc.code}
-            type="button"
-            onClick={() => setTinRegistryAtc(atc.code)}
-            className="w-full text-left px-3 py-2.5 hover:bg-indigo-50 border-b border-slate-100"
-          >
-            <div className="text-xs font-bold text-slate-900">
-              {atc.code}
-              {atc.rate && (
-                <span className="ml-2 text-indigo-600">
-                  {atc.rate}
-                </span>
-              )}
-            </div>
+{showTinRegisterModal && (
+  <div className="fixed inset-0 z-50 bg-slate-950/40 flex items-center justify-center p-4">
 
-            <div className="text-[10px] text-slate-500">
-              {atc.description}
-            </div>
-          </button>
-        ))}
-    </div>
-  )}
-</div>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold">SAVE TO TIN REGISTRY</button>
-                <button type="button" onClick={() => { resetTinRegistryForm(); setShowTinRegisterModal(false); }} className="border border-slate-300 bg-white px-4 py-2.5 rounded-lg text-xs font-bold text-slate-700">CANCEL</button>
-              </div>
-            </form>
-          </div>
+    <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 p-6">
+
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="text-base font-black text-slate-900">
+            REGISTER TIN
+          </h2>
+
+          <p className="text-xs text-slate-500 mt-1">
+            Save this TIN directly to the TIN Registry.
+          </p>
         </div>
-      )}
+
+        <button
+          type="button"
+          onClick={() => {
+            resetTinRegistryForm();
+            setShowTinRegisterModal(false);
+          }}
+          className="text-slate-500 hover:text-slate-900 font-bold"
+        >
+          ✕
+        </button>
+      </div>
+
+      <form onSubmit={handleSaveTinRegistry}>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+          {/* ==================================================
+              ROW 1
+          ================================================== */}
+
+          {/* TIN */}
+          <input
+            type="text"
+            placeholder="TIN"
+            value={tinRegistryTin}
+            onChange={(e) =>
+              setTinRegistryTin(e.target.value)
+            }
+            className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+            required
+          />
+
+          {/* VAT OWNER */}
+          <input
+            type="text"
+            placeholder="VAT OWNER"
+            value={tinRegistryVatOwner}
+            onChange={(e) => {
+              setTinRegistryVatOwner(e.target.value);
+
+              if (e.target.value.trim()) {
+                setTinRegistryNonVatOwner("");
+              }
+            }}
+            className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+          />
+
+          {/* ==================================================
+              ROW 2
+          ================================================== */}
+
+          {/* NON VAT OWNER */}
+          <input
+            type="text"
+            placeholder="NON VAT OWNER"
+            value={tinRegistryNonVatOwner}
+            onChange={(e) => {
+              setTinRegistryNonVatOwner(e.target.value);
+
+              if (e.target.value.trim()) {
+                setTinRegistryVatOwner("");
+              }
+            }}
+            className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+          />
+
+          {/* ADDRESS */}
+          <input
+            type="text"
+            placeholder="ADDRESS"
+            value={tinRegistryAddress}
+            onChange={(e) =>
+              setTinRegistryAddress(e.target.value)
+            }
+            className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+            required
+          />
+
+          {/* ==================================================
+              ROW 3
+              ATC | SAVE | CANCEL
+          ================================================== */}
+
+          {/* ATC */}
+          <div className="min-w-0">
+
+            <input
+              name="atc"
+              type="text"
+              placeholder="SEARCH ATC"
+              value={tinRegistryAtc}
+              onChange={(e) =>
+                setTinRegistryAtc(
+                  e.target.value.toUpperCase()
+                )
+              }
+              list="register-tin-atc-options"
+              autoComplete="off"
+              className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+            />
+
+            <datalist id="register-tin-atc-options">
+              {BIR_ATC_OPTIONS.map((atc) => (
+                <option
+                  key={atc.code}
+                  value={atc.code}
+                >
+                  {atc.description}
+                  {atc.rate
+                    ? ` — ${atc.rate}`
+                    : ""}
+                </option>
+              ))}
+            </datalist>
+
+          </div>
+
+          {/* SAVE + CANCEL */}
+          <div className="grid grid-cols-2 gap-3">
+
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2.5 rounded-lg text-xs font-bold"
+            >
+              SAVE
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                resetTinRegistryForm();
+                setShowTinRegisterModal(false);
+              }}
+              className="w-full border border-slate-300 bg-white hover:bg-slate-100 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-700"
+            >
+              CANCEL
+            </button>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+)}
+
+
+
 
       {/* ========================================================
           DATE FILTER
@@ -5616,14 +5719,18 @@ const BIR_FORMS = [
 
 
     {/* ====================================================
-        COMPACT REGISTER NEW TIN FORM
+        REGISTER NEW TIN FORM
     ==================================================== */}
 
     {showTinRegisterForm && (
 
-      <div className="mb-5 border border-slate-200 bg-slate-50 rounded-xl p-3">
+      <div className="mb-5 border border-slate-200 bg-slate-50 rounded-xl p-4">
 
-        <div className="flex items-center justify-between mb-2">
+        {/* ====================================================
+            FORM HEADER
+        ==================================================== */}
+
+        <div className="flex items-center justify-between mb-4">
 
           <div>
 
@@ -5631,7 +5738,7 @@ const BIR_FORMS = [
               Register New TIN
             </h3>
 
-            <p className="text-[10px] text-slate-500">
+            <p className="text-[10px] text-slate-500 mt-1">
               Enter taxpayer information.
             </p>
 
@@ -5650,6 +5757,10 @@ const BIR_FORMS = [
 
         </div>
 
+
+        {/* ====================================================
+            REGISTER FORM
+        ==================================================== */}
 
         <form
           onSubmit={(e) => {
@@ -5672,7 +5783,9 @@ const BIR_FORMS = [
               String(formData.get('address') || '').trim();
 
             const atc =
-              String(formData.get('atc') || '').trim().toUpperCase();
+              String(formData.get('atc') || '')
+                .trim()
+                .toUpperCase();
 
 
             /* ================================================
@@ -5752,6 +5865,10 @@ const BIR_FORMS = [
             };
 
 
+            /* ================================================
+               SAVE TO TIN REGISTRY
+            ================================================ */
+
             setTinRegistry((current) => [
               ...current,
               newTinRecord,
@@ -5773,16 +5890,20 @@ const BIR_FORMS = [
 
           }}
 
-          className="space-y-2"
+          className="space-y-3"
         >
 
-          {/* ================================================
+
+          {/* ====================================================
               FIRST ROW
-          ================================================ */}
+          ==================================================== */}
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
-            {/* TIN */}
+
+            {/* ==================================================
+                TIN
+            ================================================== */}
 
             <div>
 
@@ -5801,7 +5922,9 @@ const BIR_FORMS = [
             </div>
 
 
-            {/* VAT OWNER */}
+            {/* ==================================================
+                VAT OWNER
+            ================================================== */}
 
             <div>
 
@@ -5819,7 +5942,9 @@ const BIR_FORMS = [
             </div>
 
 
-            {/* NON VAT OWNER */}
+            {/* ==================================================
+                NON VAT OWNER
+            ================================================== */}
 
             <div>
 
@@ -5836,10 +5961,41 @@ const BIR_FORMS = [
 
             </div>
 
+          </div>
 
-            {/* ATC - TYPE OR SELECT */}
 
-            <div>
+          {/* ====================================================
+              SECOND ROW
+          ==================================================== */}
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+
+
+            {/* ==================================================
+                ADDRESS
+            ================================================== */}
+
+            <div className="md:col-span-5">
+
+              <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1">
+                ADDRESS
+              </label>
+
+              <input
+                name="address"
+                type="text"
+                placeholder="Complete registered address"
+                className="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+              />
+
+            </div>
+
+
+            {/* ==================================================
+                ATC
+            ================================================== */}
+
+            <div className="md:col-span-3">
 
               <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1">
                 ATC
@@ -5872,36 +6028,28 @@ const BIR_FORMS = [
 
             </div>
 
-          </div>
 
+            {/* ==================================================
+                SAVE TO TIN REGISTRY
+            ================================================== */}
 
-          {/* ================================================
-              SECOND ROW
-          ================================================ */}
+            <div className="md:col-span-2">
 
-          <div className="flex flex-col md:flex-row gap-2 items-end">
-
-            {/* ADDRESS */}
-
-            <div className="flex-1">
-
-              <label className="block text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1">
-                ADDRESS
-              </label>
-
-              <input
-                name="address"
-                type="text"
-                placeholder="Complete registered address"
-                className="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
-              />
+              <button
+                type="submit"
+                className="w-full px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold whitespace-nowrap"
+              >
+                SAVE TO TIN REGISTRY
+              </button>
 
             </div>
 
 
-            {/* BUTTONS */}
+            {/* ==================================================
+                CANCEL
+            ================================================== */}
 
-            <div className="flex gap-2 shrink-0">
+            <div className="md:col-span-2">
 
               <button
                 type="button"
@@ -5909,16 +6057,9 @@ const BIR_FORMS = [
                   resetTinRegistryForm();
                   setShowTinRegisterForm(false);
                 }}
-                className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-xs font-bold hover:bg-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-[10px] font-bold hover:bg-slate-100"
               >
                 CANCEL
-              </button>
-
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold"
-              >
-                SAVE TIN
               </button>
 
             </div>
@@ -5932,74 +6073,25 @@ const BIR_FORMS = [
     )}
 
 
-    {/* ====================================================
-        SEARCH ATC / TIN REGISTRY SEARCH
-    ==================================================== */}
+{/* ====================================================
+    SEARCH TIN / VAT / NON-VAT / ADDRESS
+==================================================== */}
 
-    <div className="relative mt-3">
+<div className="relative mt-3">
 
-      <input
-        type="text"
-        placeholder="SEARCH ATC"
-        value={tinRegistryAtc}
-        onChange={(e) =>
-          setTinRegistryAtc(
-            e.target.value.toUpperCase()
-          )
-        }
-        className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
-      />
+  <input
+    type="text"
+    placeholder="SEARCH TIN / VAT OWNER / NON-VAT OWNER / ADDRESS"
+    value={tinRegistrySearch}
+    onChange={(e) =>
+      setTinRegistrySearch(
+        e.target.value.toUpperCase()
+      )
+    }
+    className="w-full border border-slate-300 rounded-lg p-2.5 text-xs uppercase bg-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+  />
 
-      {tinRegistryAtc && (
-
-        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-slate-300 rounded-lg shadow-lg">
-
-          {BIR_ATC_OPTIONS
-            .filter((atc) =>
-              `${atc.code} ${atc.description} ${atc.rate}`
-                .toLowerCase()
-                .includes(
-                  tinRegistryAtc.toLowerCase()
-                )
-            )
-            .map((atc) => (
-
-              <button
-                key={atc.code}
-                type="button"
-                onClick={() =>
-                  setTinRegistryAtc(atc.code)
-                }
-                className="w-full text-left px-3 py-2.5 hover:bg-indigo-50 border-b border-slate-100"
-              >
-
-                <div className="text-xs font-bold text-slate-900">
-
-                  {atc.code}
-
-                  {atc.rate && (
-
-                    <span className="ml-2 text-indigo-600">
-                      {atc.rate}
-                    </span>
-
-                  )}
-
-                </div>
-
-                <div className="text-[10px] text-slate-500">
-                  {atc.description}
-                </div>
-
-              </button>
-
-            ))}
-
-        </div>
-
-      )}
-
-    </div>
+</div>
 
 
     {/* ========================================================
@@ -6068,39 +6160,35 @@ const BIR_FORMS = [
                FILTERED RECORDS
             ================================================== */
 
-            tinRegistry
-              .filter((item) => {
+           tinRegistry
+  .filter((item) => {
 
-                const searchValue =
-                  tinRegistryAtc.trim().toLowerCase();
+    const searchValue =
+      tinRegistrySearch.trim().toLowerCase();
 
-                if (!searchValue) {
-                  return true;
-                }
+    if (!searchValue) {
+      return true;
+    }
 
-                return (
-                  String(item.tin || '')
-                    .toLowerCase()
-                    .includes(searchValue) ||
+    return (
+      String(item.tin || '')
+        .toLowerCase()
+        .includes(searchValue) ||
 
-                  String(item.vatOwner || '')
-                    .toLowerCase()
-                    .includes(searchValue) ||
+      String(item.vatOwner || '')
+        .toLowerCase()
+        .includes(searchValue) ||
 
-                  String(item.nonVatOwner || '')
-                    .toLowerCase()
-                    .includes(searchValue) ||
+      String(item.nonVatOwner || '')
+        .toLowerCase()
+        .includes(searchValue) ||
 
-                  String(item.address || '')
-                    .toLowerCase()
-                    .includes(searchValue) ||
+      String(item.address || '')
+        .toLowerCase()
+        .includes(searchValue)
+    );
 
-                  String(item.atc || '')
-                    .toLowerCase()
-                    .includes(searchValue)
-                );
-
-              })
+  })
               .map((item) => (
 
                 <tr
@@ -6198,67 +6286,63 @@ const BIR_FORMS = [
               NO SEARCH RESULTS
           ==================================================== */}
 
-          {tinRegistry.length > 0 &&
-            tinRegistryAtc.trim() !== '' &&
-            tinRegistry.filter((item) => {
+{tinRegistry.length > 0 &&
+  tinRegistrySearch.trim() !== '' &&
+  tinRegistry.filter((item) => {
 
-              const searchValue =
-                tinRegistryAtc.trim().toLowerCase();
+    const searchValue =
+      tinRegistrySearch.trim().toLowerCase();
 
-              return (
-                String(item.tin || '')
-                  .toLowerCase()
-                  .includes(searchValue) ||
+    return (
+      String(item.tin || '')
+        .toLowerCase()
+        .includes(searchValue) ||
 
-                String(item.vatOwner || '')
-                  .toLowerCase()
-                  .includes(searchValue) ||
+      String(item.vatOwner || '')
+        .toLowerCase()
+        .includes(searchValue) ||
 
-                String(item.nonVatOwner || '')
-                  .toLowerCase()
-                  .includes(searchValue) ||
+      String(item.nonVatOwner || '')
+        .toLowerCase()
+        .includes(searchValue) ||
 
-                String(item.address || '')
-                  .toLowerCase()
-                  .includes(searchValue) ||
+      String(item.address || '')
+        .toLowerCase()
+        .includes(searchValue)
+    );
 
-                String(item.atc || '')
-                  .toLowerCase()
-                  .includes(searchValue)
-              );
+  }).length === 0 && (
 
-            }).length === 0 && (
+    <tr>
 
-              <tr>
+      <td
+        colSpan={6}
+        className="p-8 text-center border border-slate-200"
+      >
 
-                <td
-                  colSpan={6}
-                  className="p-8 text-center border border-slate-200"
-                >
+        <div className="text-slate-500 font-semibold">
+          No matching TIN registry records found.
+        </div>
 
-                  <div className="text-slate-500 font-semibold">
-                    No matching TIN registry records found.
-                  </div>
+        <div className="text-[10px] text-slate-400 mt-1">
+          Try another TIN, taxpayer name, or address.
+        </div>
 
-                  <div className="text-[10px] text-slate-400 mt-1">
-                    Try another TIN, taxpayer name, address, or ATC.
-                  </div>
+        <button
+          type="button"
+          onClick={() =>
+            setTinRegistrySearch('')
+          }
+          className="mt-3 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md text-[10px] font-bold"
+        >
+          CLEAR SEARCH
+        </button>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setTinRegistryAtc('')
-                    }
-                    className="mt-3 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md text-[10px] font-bold"
-                  >
-                    CLEAR SEARCH
-                  </button>
+      </td>
 
-                </td>
+    </tr>
 
-              </tr>
-
-            )}
+  )}
 
         </tbody>
 
